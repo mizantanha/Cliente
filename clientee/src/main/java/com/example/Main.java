@@ -8,42 +8,54 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        System.out.println("=== CLIENT CALCOLATRICE IN RETE ===");
 
- // =========================================================================
-        // CONFIGURAZIONE RETE:
-        // Se il server è sullo stesso PC, lascia "localhost".
-        // Se il server è su UN ALTRO PC, metti l'IP di quel PC (es: "192.168.1.45")
-        // =========================================================================
-        String serverIP = "localhost"; 
+        String serverIP = "10.22.10.8"; 
         int serverPorta = 3000;
 
         System.out.println("Tentativo di connessione al server su [" + serverIP + ":" + serverPorta + "]...");
         
-        // Apriamo il socket e gli stream di comunicazione
         try (Socket socket = new Socket(serverIP, serverPorta);
              Scanner scanner = new Scanner(System.in);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             
             System.out.println("Connesso con successo al server!");
-            System.out.println("Scrivi un testo per riceverlo in MAIUSCOLO. Digita 'exit' per uscire.");
             
-            // Ciclo continuo di invio e ricezione
             while (true) {
-                System.out.print("\nTu > ");
-                String userUtente= scanner.nextLine();
+                System.out.println("\n--- MENU OPERAZIONI ---");
+                System.out.println("1) Somma");
+                System.out.println("2) Sottrazione");
+                System.out.println("3) Moltiplicazione");
+                System.out.println("4) Divisione");
+                System.out.println("Digita 'exit' per uscire.");
+                System.out.print("Scegli un'opzione : ");
                 
-                // Inviamo la stringa digitata al server tramite la rete
-                out.println(userUtente);
+                // 1. Chiediamo l'input dell'operazione (la stringa di scelta)
+                String scelta = scanner.nextLine().trim();
                 
-                // Se l'utente decide di uscire, interrompiamo il ciclo locale
-                if ("exit".equalsIgnoreCase(userUtente.trim())) {
-                    System.out.println("Chiusura della connessione in corso...");
+                if ("exit".equalsIgnoreCase(scelta)) {
+                    out.println("exit"); 
+                    System.out.println("Chiusura in corso...");
                     break;
                 }
+              
+                if (!scelta.equals("1") && !scelta.equals("2") && !scelta.equals("3") && !scelta.equals("4")) {
+                    System.out.println("Opzione non valida! Scegli tra 1, 2, 3 o 4.");
+                    continue;
+                }
+            
+                System.out.print("Inserisci il primo numero: ");
+                String num1 = scanner.nextLine().trim();
+          
+                System.out.print("Inserisci il secondo numero: ");
+                String num2 = scanner.nextLine().trim();
                 
-                // Restiamo in attesa della risposta elaborata dal server
+                String stringaDaMandare = scelta + ";" + num1 + ";" + num2;
+                
+                out.println(stringaDaMandare);
+                System.out.println("[INFO] Inviato al server: " + stringaDaMandare);
+                
                 String rispostaServer = in.readLine();
                 
                 if (rispostaServer == null) {
@@ -51,20 +63,17 @@ public class Main {
                     break;
                 }
                 
-                System.out.println("Server > " + rispostaServer);
+                System.out.println("\12n-------------------------------------");
+                System.out.println("RISULTATO DAL SERVER > " + rispostaServer);
+                System.out.println("-------------------------------------");
             }
             
         } catch (Exception e) {
             System.err.println("\n[ERRORE DI RETE]: Impossibile comunicare con il server.");
             System.err.println("Dettaglio errore: " + e.getMessage());
-            System.err.println("Verifica che il Server sia attivo e che il Firewall non blocchi la porta " + serverPorta);
         }
         
         System.out.println("Client terminato.");
-
-
-
-        
     }
 }
 
